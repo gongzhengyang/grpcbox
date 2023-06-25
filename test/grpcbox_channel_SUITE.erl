@@ -5,6 +5,7 @@
         end_per_suite/1,
         add_and_remove_endpoints/1,
         add_and_remove_endpoints_active_workers/1,
+        subchannel_reconnect/1,
         pick_worker_strategy/1,
         pick_active_worker_strategy/1,
         pick_specify_worker_strategy/1]).
@@ -15,6 +16,7 @@ all() ->
     [
         add_and_remove_endpoints,
         add_and_remove_endpoints_active_workers,
+        subchannel_reconnect,
         pick_worker_strategy,
         pick_active_worker_strategy,
         pick_specify_worker_strategy
@@ -75,6 +77,17 @@ add_and_remove_endpoints_active_workers(_Config) ->
     grpcbox_channel:remove_endpoints(default_channel, [{https, "127.0.0.1", 18081, []}, {https, "127.0.0.1", 18082, []}, {https, "127.0.0.1", 18083, []}], normal),
     ct:sleep(1000),
     ?assertEqual(1, length(gproc_pool:active_workers({default_channel, active}))).
+
+subchannel_reconnect(_Config) ->
+    grpcbox_channel_sup:start_child(reconnect_channel, [{http, "127.0.0.1", 19000, []}], #{}),
+    grpcbox:start_server(#{listen_opts => #{port => 19000, ip => {127,0,0,1}},
+                            grpc_opts => #{service_protos => [route_guide_pb],
+                                          services => #{'routeguide.RouteGuide' =>
+                                                            routeguide_route_guide}}}),
+    ?assertEqual(0, length(gproc_pool:active_workers({reconnect_channel, active}))),
+    ct:sleep(20000),
+    ?assertEqual(1, length(gproc_pool:active_workers({reconnect_channel, active}))),
+    ok.
 
 pick_worker_strategy(_Config) ->
     ?assertEqual(ok, pick_worker(default_channel)),
