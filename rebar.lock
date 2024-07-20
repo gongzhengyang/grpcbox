@@ -2,7 +2,7 @@
 [{<<"acceptor_pool">>,{pkg,<<"acceptor_pool">>,<<"1.0.0">>},0},
  {<<"chatterbox">>,
   {git,"https://github.com/gongzhengyang/chatterbox.git",
-       {ref,"a331eab676428bb0dfbcb31fb09e40dc0d674fc1"}},
+       {ref,"33e0c264b6ecc1d5fdda441a0dac320690a1bd36"}},
   0},
  {<<"ctx">>,{pkg,<<"ctx">>,<<"0.6.0">>},0},
  {<<"gproc">>,{pkg,<<"gproc">>,<<"1.0.0">>},0},
