@@ -71,7 +71,6 @@ jobs:
         otp_version: ['26.0']
         rebar3_version: ['3.22.1']
         os: [ubuntu-20.04]
-
     steps:
     - uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
