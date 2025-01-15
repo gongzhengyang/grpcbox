@@ -36,15 +36,15 @@ init_per_suite(_Config) ->
     application:ensure_all_started(grpcbox),
     ct:sleep(1000),
     grpcbox_channel_sup:start_link(),
-    grpcbox_channel_sup:start_child(default_channel, [{http, "127.0.0.1", 18080, []}], #{}),
+    grpcbox_channel_sup:start_child(default_channel, [{http, "127.0.0.1", 18080, [], #{}}], #{}),
     grpcbox_channel_sup:start_child(random_channel,
-                                    [{http, "127.0.0.1", 18080, []}, {http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}],
+                                    [{http, "127.0.0.1", 18080, [], #{}}, {http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}],
                                     #{balancer => random}),
     grpcbox_channel_sup:start_child(hash_channel,
-                                    [{http, "127.0.0.1", 18080, []}, {http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}],
+                                    [{http, "127.0.0.1", 18080, [], #{}}, {http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}],
                                     #{balancer => hash}),
     grpcbox_channel_sup:start_child(direct_channel,
-                                    [{http, "127.0.0.1", 18080, []}, {http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.4", 18084, []}],
+                                    [{http, "127.0.0.1", 18080, [], #{}}, {http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.4", 18084, [], #{}}],
                                     #{ balancer => direct}),
 
     _Config.
@@ -55,31 +55,31 @@ end_per_suite(_Config) ->
 
 
 add_and_remove_endpoints(_Config) ->
-    grpcbox_channel:add_endpoints(default_channel, [{http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}]),
+    grpcbox_channel:add_endpoints(default_channel, [{http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}]),
     ?assertEqual(4, length(gproc_pool:active_workers(default_channel))),
-    grpcbox_channel:add_endpoints(default_channel, [{https, "127.0.0.1", 18081, []}, {https, "127.0.0.1", 18082, []}, {https, "127.0.0.1", 18083, []}]),
+    grpcbox_channel:add_endpoints(default_channel, [{https, "127.0.0.1", 18081, [], #{}}, {https, "127.0.0.1", 18082, [], #{}}, {https, "127.0.0.1", 18083, [], #{}}]),
     ?assertEqual(7, length(gproc_pool:active_workers(default_channel))),
-    grpcbox_channel:remove_endpoints(default_channel, [{http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}], normal),
+    grpcbox_channel:remove_endpoints(default_channel, [{http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}], normal),
     ?assertEqual(4, length(gproc_pool:active_workers(default_channel))),
-    grpcbox_channel:remove_endpoints(default_channel, [{https, "127.0.0.1", 18080, []}, {https, "127.0.0.1", 18081, []}, {https, "127.0.0.1", 18082, []}], normal),
+    grpcbox_channel:remove_endpoints(default_channel, [{https, "127.0.0.1", 18080, [], #{}}, {https, "127.0.0.1", 18081, [], #{}}, {https, "127.0.0.1", 18082, [], #{}}], normal),
     ?assertEqual(2, length(gproc_pool:active_workers(default_channel))).
 
 add_and_remove_endpoints_active_workers(_Config) ->
-    grpcbox_channel:add_endpoints(default_channel, [{http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}]),
+    grpcbox_channel:add_endpoints(default_channel, [{http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}]),
     ct:sleep(1000),
     ?assertEqual(4, length(gproc_pool:active_workers({default_channel, active}))),
-    grpcbox_channel:add_endpoints(default_channel, [{https, "127.0.0.1", 18081, []}, {https, "127.0.0.1", 18082, []}, {https, "127.0.0.1", 18083, []}]),
+    grpcbox_channel:add_endpoints(default_channel, [{https, "127.0.0.1", 18081, [], #{}}, {https, "127.0.0.1", 18082, [], #{}}, {https, "127.0.0.1", 18083, [], #{}}]),
     ct:sleep(1000),
     ?assertEqual(4, length(gproc_pool:active_workers({default_channel, active}))),
-    grpcbox_channel:remove_endpoints(default_channel, [{http, "127.0.0.1", 18081, []}, {http, "127.0.0.1", 18082, []}, {http, "127.0.0.1", 18083, []}], normal),
+    grpcbox_channel:remove_endpoints(default_channel, [{http, "127.0.0.1", 18081, [], #{}}, {http, "127.0.0.1", 18082, [], #{}}, {http, "127.0.0.1", 18083, [], #{}}], normal),
     ct:sleep(1000),
     ?assertEqual(1, length(gproc_pool:active_workers({default_channel, active}))),
-    grpcbox_channel:remove_endpoints(default_channel, [{https, "127.0.0.1", 18081, []}, {https, "127.0.0.1", 18082, []}, {https, "127.0.0.1", 18083, []}], normal),
+    grpcbox_channel:remove_endpoints(default_channel, [{https, "127.0.0.1", 18081, [], #{}}, {https, "127.0.0.1", 18082, [], #{}}, {https, "127.0.0.1", 18083, [], #{}}], normal),
     ct:sleep(1000),
     ?assertEqual(1, length(gproc_pool:active_workers({default_channel, active}))).
 
 subchannel_reconnect(_Config) ->
-    grpcbox_channel_sup:start_child(reconnect_channel, [{http, "127.0.0.1", 19000, []}], #{}),
+    grpcbox_channel_sup:start_child(reconnect_channel, [{http, "127.0.0.1", 19000, [], #{}}], #{}),
     grpcbox:start_server(#{listen_opts => #{port => 19000, ip => {127,0,0,1}},
                             grpc_opts => #{service_protos => [route_guide_pb],
                                           services => #{'routeguide.RouteGuide' =>
@@ -113,9 +113,9 @@ pick_active_worker_strategy(_Config) ->
     ok.
 
 pick_specify_worker_strategy(_Config) ->
-    ?assertMatch({ok, _} ,grpcbox_channel:get(default_channel, stream, {http, "127.0.0.1", 18080, []})),
-    ?assertEqual({error, not_found_endpoint} ,grpcbox_channel:get(default_channel, stream, {http, "127.0.0.1", 8080, []})),
-    ?assertEqual({error, not_found_endpoint} ,grpcbox_channel:get(channel_xxx, stream, {http, "127.0.0.1", 8080, []})),
+    ?assertMatch({ok, _} ,grpcbox_channel:get(default_channel, stream, {http, "127.0.0.1", 18080, [], #{}})),
+    ?assertEqual({error, not_found_endpoint} ,grpcbox_channel:get(default_channel, stream, {http, "127.0.0.1", 8080, [], #{}})),
+    ?assertEqual({error, not_found_endpoint} ,grpcbox_channel:get(channel_xxx, stream, {http, "127.0.0.1", 8080, [], #{}})),
     ok.
 
 pick_worker(Name, N) ->
